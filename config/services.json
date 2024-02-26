@@ -1,0 +1,26 @@
+{
+    "backends": {
+        "~/code/ows-collaborator": {},
+        "~/code/ows-moneyhub": {},
+        "~/code/ows-notifications": {},
+        "~/code/ows-permissions": {},
+        "~/code/ows-users": {
+            "cmd": [
+                "source env/bin/activate",
+                "source .env/",
+                "make dev"
+            ]
+        }
+    },
+    "graphqls": {
+        "~/code/graphql-abacus": {},
+        "~/code/graphql-collaborator": {},
+        "~/code/graphql-product": {},
+        "~/code/graphql-user": {}
+    },
+    "frontends": {
+        "~/code/frontend-collaborator-suite": {},
+        "~/code/frontend-moneyhub": {},
+        "~/code/frontend-settings": {}
+    }
+}
