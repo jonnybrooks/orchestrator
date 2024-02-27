@@ -1,0 +1,14 @@
+{
+    "backends": [
+        "source env/bin/activate",
+        "make dev"
+    ],
+    "graphqls": [
+        "nvm use",
+        "yarn start"
+    ],
+    "frontends": [
+        "nvm use",
+        "yarn start"
+    ]
+}

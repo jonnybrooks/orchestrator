@@ -1,5 +1,6 @@
 const pathUtils = require('path');
 const config = require('./config');
+const defaultCommands = require('../config/defaultCommands.json');
 
 let next_port = config.baseServicePort;
 
@@ -31,30 +32,37 @@ function unwrapGraphqlEnvUrls(graphqls) {
 // Define services
 // 
 
+function renamePane(label) {
+    return `printf '\x1b]2;${label}\x07'`;
+}
+
 function defineBackend(path, overrideConfig = {}) {
+    const label = pathUtils.basename(path);
     return Object.assign({
-        "label": pathUtils.basename(path),
-        "cwd": path,
-        "commands": [ "make dev" ],
-        "env": { "PORT": next_port++ }
+        label,
+        cwd: path,
+        commands: [renamePane(label), ...defaultCommands.backends],
+        env: { "PORT": next_port++ }
     }, overrideConfig);
 }
 
 function defineGraphql(backends, path, overrideConfig = {}) {
+    const label = pathUtils.basename(path);
     return Object.assign({
-        "label": pathUtils.basename(path),
-        "cwd": path,
-        "commands": [ "nvm use", "yarn start" ],
-        "env": { "PORT": next_port++, ...unwrapBackendEnvUrls(backends) }
+        label,
+        cwd: path,
+        commands: [renamePane(label), ...defaultCommands.graphqls],
+        env: { "PORT": next_port++, ...unwrapBackendEnvUrls(backends) }
     }, overrideConfig);
 }
 
 function defineFrontend(path, overrideConfig = {}) {
+    const label = pathUtils.basename(path);
     return Object.assign({
-        "label": pathUtils.basename(path),
-        "cwd": path,
-        "commands": [ "nvm use", "yarn start" ],
-        "env": { 
+        label,
+        cwd: path,
+        commands: [renamePane(label), ...defaultCommands.frontends],
+        env: { 
             "GRAPHQL_URL": `http://localhost:${config.gatewayPort}/graphql`
         }
     }, overrideConfig);
