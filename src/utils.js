@@ -44,7 +44,7 @@ function defineGraphql(backends, path, overrideConfig = {}) {
     return Object.assign({
         "label": pathUtils.basename(path),
         "cwd": path,
-        "commands": [ "yarn start" ],
+        "commands": [ "nvm use", "yarn start" ],
         "env": { "PORT": next_port++, ...unwrapBackendEnvUrls(backends) }
     }, overrideConfig);
 }
@@ -53,7 +53,7 @@ function defineFrontend(path, overrideConfig = {}) {
     return Object.assign({
         "label": pathUtils.basename(path),
         "cwd": path,
-        "commands": [ "yarn start" ],
+        "commands": [ "nvm use", "yarn start" ],
         "env": { 
             "GRAPHQL_URL": `http://localhost:${config.gatewayPort}/graphql`
         }
