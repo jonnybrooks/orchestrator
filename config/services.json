@@ -15,6 +15,7 @@
     "graphqls": {
         "~/code/graphql-abacus": {},
         "~/code/graphql-collaborator": {},
+        "~/code/graphql-knowledge": {},
         "~/code/graphql-product": {},
         "~/code/graphql-user": {}
     },

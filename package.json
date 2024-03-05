@@ -7,6 +7,6 @@
         "inquirer": "^8.0.0"
     },
     "bin": {
-        "orchestrate": "cli.js"
+        "orchestrate": "cli.sh"
     }
 }
