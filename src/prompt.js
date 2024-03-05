@@ -3,12 +3,12 @@
 require('dotenv').config();
 const pathUtils = require('path');
 const inquirer = require('inquirer');
-const config = require('./src/config');
-const utils = require('./src/utils');
-const tmux = require('./src/tmux');
+const config = require('./config');
+const utils = require('./utils');
+const tmux = require('./tmux');
 
-const services = require('./config/services.json');
-const selectedByDefault = require('./config/selectedByDefault.json');
+const services = require('../config/services.json');
+const selectedByDefault = require('../config/selectedByDefault.json');
 
 ;(async function () {
     //
