@@ -5,7 +5,7 @@
 - Update `config/services.json` to list the paths to the services you want to launch
 - Update `config/selectedByDefault.json` to select which services get selected by default (makes common case easier)
 - Update `config/defaultCommands.json` if you want to specify a list of default commands for a given service group
-- If you want to configure tmux, create `$HOME/.tmux.conf` and define your commands there
+- This script will generate a tmux config file at `$HOME/.tmux.conf` if one does not already exist
 
 ## Using
 - Run `npm link` in the root of the directory to enable running the `orchestrate` command globally
