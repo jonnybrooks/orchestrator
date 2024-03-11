@@ -1,6 +1,10 @@
 {
     "backends": {
-        "~/code/ows-collaborator": {},
+        "~/code/ows-collaborator": {
+            "commands": [
+                "make dev"
+            ]
+        },
         "~/code/ows-moneyhub": {},
         "~/code/ows-notifications": {},
         "~/code/ows-permissions": {},
