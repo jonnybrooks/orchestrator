@@ -5,7 +5,7 @@
         "~/code/ows-notifications": {},
         "~/code/ows-permissions": {},
         "~/code/ows-users": {
-            "cmd": [
+            "commands": [
                 "source env/bin/activate",
                 "source .env/",
                 "make dev"

@@ -9,6 +9,7 @@ function sleep(ms) {
 
 async function exec(cmd, delay = 0) {
     await sleep(delay);
+    // console.log(cmd);
     execSync(cmd);
 }
 
