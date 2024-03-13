@@ -1,14 +1,18 @@
 # orchestrator
 
 ## Prerequisites
-- Install tmux: https://github.com/tmux/tmux/wiki/Installing
+- node/npm: 
+- tmux: https://github.com/tmux/tmux/wiki/Installing
+
+## Configuring
+- This script will copy files from `./config.shadow` to `./config` if they don't already exist there
 - Update `config/services.json` to list the paths to the services you want to launch
 - Update `config/selectedByDefault.json` to select which services get selected by default (makes common case easier)
 - Update `config/defaultCommands.json` if you want to specify a list of default commands for a given service group
-- This script will generate a tmux config file at `$HOME/.tmux.conf` if one does not already exist
 
-## Using
-- Run `npm i && npm link` in the root of the directory to install the package and enable running the `orchestrate` command globally
-- This command will list the services as defined in services.json and will allow you to select which to run in parallel
-- This will create each service in its own tmux window, rather than in split panes
-    - You can navigate to prev/next windows with `ctrl+b,p` / `ctrl+b,n` respectively
+# Usage
+- Run `npm ci && npm link` in the root of the directory to install the package and enable running the `orchestrate` command globally
+- This command will list the services as defined in `config/services.json` and will prompt you to select which services you'd like to run in tandem
+- This will spawn each service in its own tmux window
+    - You can navigate to prev/next windows with `<PREFIX>,p` / `<PREFIX>,n` respectively
+    - The default tmux `<PREFIX>` is `ctrl+b`
