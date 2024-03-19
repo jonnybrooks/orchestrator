@@ -1,28 +1,13 @@
 {
+    "selectedByDefault": [],
     "services": {
-        "backends": {
-            "~/path/to/your/code": {
-                "commands": [
-                    "source env/bin/activate",
-                    "make dev"
-                ]
-            }
-        },
+        "backends": {},
         "graphqls": {},
         "frontends": {}
     },
     "defaultCommands": {
-        "backends": [
-            "make dev"
-        ],
-        "graphqls": [
-            "yarn start"
-        ],
-        "frontends": [
-            "yarn start"
-        ]
-    },
-    "selectedByDefault": [
-        "~/path/to/your/code"
-    ]
+        "backends": ["make dev"],
+        "graphqls": ["yarn start"],
+        "frontends": ["yarn start"]
+    }
 }
