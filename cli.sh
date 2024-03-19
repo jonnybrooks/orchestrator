@@ -14,9 +14,8 @@ function create_config_if_not_exist {
 # Create default config files if they don't exist
 mkdir -p $ROOT/config
 create_config_if_not_exist $HOME/.tmux.conf $ROOT/config/.tmux.conf
-create_config_if_not_exist $ROOT/config/defaultCommands.json $ROOT/config.shadow/defaultCommands.json
-create_config_if_not_exist $ROOT/config/selectedByDefault.json $ROOT/config.shadow/selectedByDefault.json
-create_config_if_not_exist $ROOT/config/services.json $ROOT/config.shadow/services.json
+create_config_if_not_exist $ROOT/config.json $ROOT/config.shadow/config.json
+create_config_if_not_exist $ROOT/.env $ROOT/config.shadow/.env
 
 # Create a unique session ID and temp file path to pass to the orchestrator
 source $ROOT/.env

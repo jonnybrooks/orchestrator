@@ -4,4 +4,5 @@ module.exports = {
     gatewayPath: process.env.GATEWAY_PATH || '~/code/graphql-gateway',
     staticSessionName: process.env.STATIC_SESSION_NAME || 'orchestrator',
     randomiseSessionName: !!parseInt(process.env.RANDOMISE_SESSION_NAME) || false,
+    overwritePaneLabel: process.env.OVERWRITE_PANE_LABEL || true,
 };

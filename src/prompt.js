@@ -7,8 +7,7 @@ const config = require('./config');
 const utils = require('./utils');
 const tmux = require('./tmux');
 
-const services = require('../config/services.json');
-const selectedByDefault = require('../config/selectedByDefault.json');
+const { services, selectedByDefault } = require('../config.json');
 
 ;(async function () {
     //

@@ -1,6 +1,6 @@
 const pathUtils = require('path');
 const config = require('./config');
-const defaultCommands = require('../config/defaultCommands.json');
+const { defaultCommands } = require('../config.json');
 
 let next_port = config.baseServicePort;
 
@@ -38,34 +38,52 @@ function renamePane(label) {
 
 function defineBackend(path, overrideConfig = {}) {
     const label = pathUtils.basename(path);
-    return Object.assign({
-        label,
+    return {
         cwd: path,
-        commands: [renamePane(label), ...defaultCommands.backends],
-        env: { "PORT": next_port++ }
-    }, overrideConfig);
+        label: overrideConfig.label || label,
+        delay: overrideConfig.delay || 0,
+        env: { "PORT": next_port++, ...(overrideConfig.env || {}) },
+        commands: [
+            ...(config.overwritePaneLabel ? [renamePane(label)] : []),
+            ...(overrideConfig.commands || defaultCommands.backends || [])
+        ],
+    };
 }
 
 function defineGraphql(backends, path, overrideConfig = {}) {
     const label = pathUtils.basename(path);
-    return Object.assign({
-        label,
+    return {
         cwd: path,
-        commands: [renamePane(label), ...defaultCommands.graphqls],
-        env: { "PORT": next_port++, ...unwrapBackendEnvUrls(backends) }
-    }, overrideConfig);
+        label: overrideConfig.label || label,
+        delay: overrideConfig.delay || 0,
+        env: { 
+            "PORT": next_port++,
+            ...unwrapBackendEnvUrls(backends),
+            ...(overrideConfig.env || {})
+        },
+        commands: [
+            ...(config.overwritePaneLabel ? [renamePane(label)] : []),
+            ...(overrideConfig.commands || defaultCommands.graphqls || [])
+        ],
+    };
 }
 
 function defineFrontend(path, overrideConfig = {}) {
     const label = pathUtils.basename(path);
-    return Object.assign({
-        label,
+    return {
         cwd: path,
-        commands: [renamePane(label), ...defaultCommands.frontends],
+        label: overrideConfig.label || label,
+        delay: overrideConfig.delay || 0,
         env: { 
-            "GRAPHQL_URL": `http://localhost:${config.gatewayPort}/graphql`
-        }
-    }, overrideConfig);
+            "CLI_SERVER_PORT": next_port++,
+            "GRAPHQL_URL": `http://localhost:${config.gatewayPort}/graphql`,
+            ...(overrideConfig.env || {})
+        },
+        commands: [
+            ...(config.overwritePaneLabel ? [renamePane(label)] : []),
+            ...(overrideConfig.commands || defaultCommands.frontends || [])
+        ],
+    };
 }
 
 //

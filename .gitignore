@@ -1,3 +1,6 @@
 .env
 node_modules/
-config/
+.vscode/
+out/
+config.json
+!config.shadow/*

@@ -1,9 +1,0 @@
-{
-    "backends": {
-        "~/path/to/your/code": {
-            "commands": []
-        }
-    },
-    "graphqls": {},
-    "frontends": {}
-}
