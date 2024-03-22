@@ -1,94 +1,74 @@
 #!/usr/bin/env node
-
-require('dotenv').config();
 const pathUtils = require('path');
 const inquirer = require('inquirer');
 const config = require('./config');
 const utils = require('./utils');
 const tmux = require('./tmux');
-
-const { services, selectedByDefault } = require('../config.json');
+const hydrateService = require('./hydrateService');
 
 ;(async function () {
     //
-    // Prompt
-    // 
-    
-    const selectedByDefaultSet = new Set(selectedByDefault);
-    const prompts = [];
-    if(typeof services.backends === 'object' && Object.keys(services.backends).length > 0) {
-        prompts.push({
-            name: "backends",
-            message: "Which backends would you like to run?",
-            type: "checkbox",
-            choices: Object.keys(services.backends).map((path) => ({
-                name: pathUtils.basename(path),
-                value: path,
-                checked: selectedByDefaultSet.has(path)
-            })),
-        });
-    }
-        
-    if(typeof services.graphqls === 'object' && Object.keys(services.graphqls).length > 0) {
-        prompts.push({
-            name: "graphqls",
-            message: "Which graphql servers would you like to run?",
-            type: "checkbox",
-            choices: Object.keys(services.graphqls).map((path) => ({
-                name: pathUtils.basename(path),
-                value: path,
-                checked: selectedByDefaultSet.has(path)
-            })),
-        });
-    }
-    
-    if(typeof services.frontends === 'object' && Object.keys(services.frontends).length > 0) {
-        prompts.push({
-            name: "frontends",
-            message: "Which frontends would you like to run?",
-            type: "checkbox",
-            choices: Object.keys(services.frontends).map((path) => ({
-                name: pathUtils.basename(path),
-                value: path,
-                checked: selectedByDefaultSet.has(path)
-            })),
-        });
-    }
-
+    // Prompt user for choices
     //
-    // Generate config
-    // 
-
-    const choices = await inquirer.prompt(prompts);
-
-    const backends = (choices.backends ?? [])
-        .map((path) => [path, services.backends[path]])
-        .map(([path, config]) => utils.defineBackend(path, config));
-
-    const graphqls = (choices.graphqls ?? [])
-        .map((path) => [path, services.backends[path]])
-        .map(([path, config]) => utils.defineGraphql(backends, path, config));
     
-    const frontends = (choices.frontends ?? [])
-        .map((path) => [path, services.backends[path]])
-        .map(([path, config]) => utils.defineFrontend(path, config));
+    const choices = {};
+    const promptGroups = {};
+    
+    config.services.forEach((service) => {
+        const group = service.group;
+        if(!choices[group]) choices[group] = [];
+        if(!promptGroups[group]) promptGroups[group] = {
+            name: group,
+            message: `Which services in group '${group}' would you like to run?`,
+            type: "checkbox",
+            choices: []
+        };
 
-    const gateway = utils.defineGraphql([], config.gatewayPath, {
-        "delay": 10000, // give the gateway some time for the other servers to start
-        "env": {
-            "PORT": config.gatewayPort,
-            ...utils.unwrapGraphqlEnvUrls(graphqls)
+        const promptGroup = promptGroups[group];
+
+        if(service.alwaysRun) {
+            choices[group].push(service);
+        }
+        else {
+            const label = pathUtils.basename(service.path);
+            promptGroup.choices.push({
+                name: label,
+                checked: !!service.selectedByDefault,
+                value: service,
+            })
+        }
+        
+        if(config.groups[group]?.hideInCli) {
+            delete promptGroups[group];
         }
     });
 
-    //
-    // Run
-    // 
+    const promptChoices = await inquirer.prompt(Object.values(promptGroups).flat());
+    for(const [group, services] of Object.entries(promptChoices)) {
+        choices[group].push(...services);
+    }
 
-    await tmux.runServices([
-        ...backends,
-        ...graphqls,
-        ...frontends,
-        gateway 
-    ]);
+    //
+    // Compose service definitions
+    //
+    
+    const serviceDefs = [];
+    const context = {};
+
+    Object.values(choices).flat().forEach((service) => {
+        const group = config.groups[service.group] || {};
+        const def = utils.defineBaseService(context, group, service, serviceDefs);
+        serviceDefs.push(def);
+    });
+    
+    serviceDefs.forEach((service) => {
+        const group = config.groups[service.group] || {};
+        hydrateService(context, group, service, serviceDefs);
+    });
+
+    //
+    // Run services
+    // 
+    
+    await tmux.runServices(serviceDefs);
 })();

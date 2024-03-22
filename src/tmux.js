@@ -9,7 +9,6 @@ function sleep(ms) {
 
 async function exec(cmd, delay = 0) {
     await sleep(delay);
-    // console.log(cmd);
     execSync(cmd);
 }
 
@@ -28,7 +27,7 @@ async function runServices(services) {
     for(const service of services) {
         const env = Object.entries(service.env ?? {}).map(([k, v]) => `-e ${k}=${v}`).join(' ');
         const commands = service.commands.join(' && ');
-        const cmd = `tmux neww -d -t ${SESSION_NAME}: -n ${service.label} -c ${service.cwd} ${env} "${commands} || zsh"`;
+        const cmd = `tmux neww -d -t ${SESSION_NAME}: -n ${service.label} -c ${service.path} ${env} "${commands} || zsh"`;
 
         const delay_message = (service.delay && service.delay > 0) ? ` (with ${service.delay / 1000}s delay)` : '';
         process.stderr.write(`Launching ${service.label}${delay_message}...\n`);

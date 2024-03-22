@@ -1,0 +1,32 @@
+#
+# Config
+# Every field here is required. 
+#
+
+baseServicePort      = 8000           # The port to start "counting" from for auto-assigned ports.
+randomiseSessionName = false          # If true, the tmux session name will be randomly generated. If false, The session name will be `staticSessionName`.
+staticSessionName    = "orchestrator" # If `randomiseSessionName` is false, this is the name given to the session.
+overwritePaneLabel   = true           # If true, use ANSI escape codes to overwrite each tmux window's label with the service's label. Only makes sense if `set -g pane-border-status top` is present in `~/.tmux.conf`.
+
+#
+# Services
+#
+
+[[services]]
+path              = "~/path/to/service"  # (required) Path to the service's root directory.
+group             = "backend"            # (required) Group to which this service belongs. 
+label             = "service"            # The label given to the service, and to its window in tmux. Default: The path's basename.
+delay             = 0                    # Delay, in ms, to wait before launching the service. Default: 0.
+env               = {}                   # Environment variables in the service. Default: empty.
+selectedByDefault = false                # Whether or not the service is selected by default in the CLI. Default: false.
+commands          = ["npm launch"]       # Commands tmux will run to launch the service. Default: defaultCommands for this service's group.
+alwaysRun         = false                # If true, hides this service in the CLI but still runs it. Default: false.
+
+#
+# Groups
+# Optional per-group config
+#
+
+[groups.backend]
+defaultCommands = ["npm start"] # The default commands to run for every service belonging to this group. Overriden by service's `commands` field if present.
+hideInCli       = false         # If true, this group will be hidden from the CLI. Useful if a group only contains service's marked as `alwaysRun`.

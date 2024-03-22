@@ -14,11 +14,10 @@ function create_config_if_not_exist {
 # Create default config files if they don't exist
 mkdir -p $ROOT/config
 create_config_if_not_exist $HOME/.tmux.conf $ROOT/config/.tmux.conf
-create_config_if_not_exist $ROOT/config.json $ROOT/config.shadow/config.json
-create_config_if_not_exist $ROOT/.env $ROOT/config.shadow/.env
+create_config_if_not_exist $ROOT/config.toml $ROOT/config.shadow/config.toml
 
 # Create a unique session ID and temp file path to pass to the orchestrator
-source $ROOT/.env
+# source $ROOT/.env
 SESSION_ID="orchestrator_$(openssl rand -hex 8)"
 PATH_TO_SESSION_FILE="/tmp/$SESSION_ID.txt"
 
