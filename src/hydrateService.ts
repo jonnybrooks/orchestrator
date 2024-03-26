@@ -1,6 +1,7 @@
-const utils = require('./utils');
+import { Context, ServiceGroupConfig, Service } from "./types";
+import * as utils from './utils';
 
-module.exports = function(context, group, service, serviceDefs) {
+export default function(context: Context, group: ServiceGroupConfig, service: Service, serviceDefs: Service[]) {
     // `context` is an empty object passed from outside which allows you to attach custom data to each invocation of this function.
     // Keeping track of an incrementing port number, for example, is a good use case for this object.
     // `group` is this service's group config, if it exists.

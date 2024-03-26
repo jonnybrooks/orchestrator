@@ -1,18 +1,18 @@
-#!/usr/bin/env node
-const pathUtils = require('path');
-const inquirer = require('inquirer');
-const config = require('./config');
-const utils = require('./utils');
-const tmux = require('./tmux');
-const hydrateService = require('./hydrateService');
+import inquirer from 'inquirer';
+import * as pathUtils from 'path';
+import { Service, PromptGroup, ServiceConfig } from "./types";
+import * as utils from './utils';
+import * as tmux from './tmux';
+import hydrateService from './hydrateService';
+import config from './config';
 
 ;(async function () {
     //
     // Prompt user for choices
     //
     
-    const choices = {};
-    const promptGroups = {};
+    const choices: Record<string, ServiceConfig[]> = {};
+    const promptGroups: Record<string, PromptGroup> = {};
     
     config.services.forEach((service) => {
         const group = service.group;
@@ -38,12 +38,12 @@ const hydrateService = require('./hydrateService');
             })
         }
         
-        if(config.groups[group]?.hideInCli) {
+        if(config.groups?.[group]?.hideInCli) {
             delete promptGroups[group];
         }
     });
 
-    const promptChoices = await inquirer.prompt(Object.values(promptGroups).flat());
+    const promptChoices: Record<string, Service[]> = await inquirer.prompt(Object.values(promptGroups).flat());
     for(const [group, services] of Object.entries(promptChoices)) {
         choices[group].push(...services);
     }
@@ -52,17 +52,17 @@ const hydrateService = require('./hydrateService');
     // Compose service definitions
     //
     
-    const serviceDefs = [];
+    const serviceDefs: Service[] = [];
     const context = {};
 
     Object.values(choices).flat().forEach((service) => {
-        const group = config.groups[service.group] || {};
-        const def = utils.defineBaseService(context, group, service, serviceDefs);
+        const group = config.groups?.[service.group] || {};
+        const def = utils.defineBaseService(context, group, service);
         serviceDefs.push(def);
     });
     
     serviceDefs.forEach((service) => {
-        const group = config.groups[service.group] || {};
+        const group = config.groups?.[service.group] || {};
         hydrateService(context, group, service, serviceDefs);
     });
 

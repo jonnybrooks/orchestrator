@@ -1,12 +1,13 @@
-const pathUtils = require('path');
-const config = require('./config');
+import { Context, Service, ServiceConfig, ServiceGroupConfig } from "./types";
+import * as pathUtils from 'path';
+import config from './config';
 
 //
 // Unwrap utils
 // 
 
-function unwrapBackendEnvUrls(backends) {
-    const ret = {};
+export function unwrapBackendEnvUrls(backends: Service[]) {
+    const ret: Service['env'] = {};
     backends.forEach((service) => {
         const serverName = service.label.toUpperCase().replace('-', '_');
         const key = `${serverName}_URL`;
@@ -15,8 +16,8 @@ function unwrapBackendEnvUrls(backends) {
     return ret;
 }
 
-function unwrapGraphqlEnvUrls(graphqls) {
-    const ret = {};
+export function unwrapGraphqlEnvUrls(graphqls: Service[]) {
+    const ret: Service['env'] = {};
     graphqls.forEach((service) => {
         const serverName = service.label.toUpperCase().replace('-', '_');
         const key = `${serverName}_URL`;
@@ -29,11 +30,11 @@ function unwrapGraphqlEnvUrls(graphqls) {
 // Define services
 // 
 
-function renamePane(label) {
+function renamePane(label: string) {
     return `printf '\x1b]2;${label}\x07'`;
 }
 
-function defineBaseService(context, group, service) {
+export function defineBaseService(context: Context, group: ServiceGroupConfig, service: ServiceConfig): Service {
     const label = pathUtils.basename(service.path);
     return {
         ...service,
@@ -41,6 +42,7 @@ function defineBaseService(context, group, service) {
         delay: service.delay || 0,
         env: service.env || {},
         selectedByDefault: !!service.selectedByDefault,
+        alwaysRun: service.alwaysRun || false,
         commands: [
             ...(config.overwritePaneLabel ? [renamePane(label)] : []),
             ...(service.commands || group.defaultCommands || [])
@@ -48,7 +50,7 @@ function defineBaseService(context, group, service) {
     };
 }
 
-function defaultHydrateService(context, group, service, serviceDefs) {
+export function defaultHydrateService(context: Context, group: ServiceGroupConfig, service: Service, serviceDefs: Service[]) {
     // `context` is an empty object passed from outside which allows you to attach custom data to each invocation of this function.
     // Keeping track of an incrementing port number, for example, is a good use case for this object.
     // `group` is this service's group config, if it exists.
@@ -81,7 +83,7 @@ function defaultHydrateService(context, group, service, serviceDefs) {
             // Each frontend needs to connect to the federated graphql supergraph, aka the 'gateway'.
             // We have configured `config.toml` to contain a single service under the 'gateway' group, so we can
             // grab it with `find`.
-            const gatewayDef = serviceDefs.find(({ group }) => group === 'gateway');
+            const gatewayDef = serviceDefs.find(({ group }) => group === 'gateway')!;
             // Since we know env.PORT is defined in `config.toml`, it will be part of the gateway service's base definition
             // and so will be accessible in `gatewayDef` even _before_ the service is hydrated.
             const gatewayPort = gatewayDef.env.PORT;
@@ -89,15 +91,3 @@ function defaultHydrateService(context, group, service, serviceDefs) {
         } break;
     }
 }
-
-//
-// Exports
-// 
-
-module.exports = {
-    unwrapBackendEnvUrls,
-    unwrapGraphqlEnvUrls,
-    renamePane,
-    defineBaseService,
-    defaultHydrateService,
-};

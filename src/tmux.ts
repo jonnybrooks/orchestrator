@@ -1,18 +1,19 @@
-const { execSync } = require('child_process');
-const { randomBytes } = require('crypto');
-const { writeFileSync } = require('fs');
-const config = require('./config');
+import { Service } from "./types";
+import { execSync } from 'child_process';
+import { randomBytes } from 'crypto';
+import { writeFileSync } from 'fs';
+import config from './config';
 
-function sleep(ms) {
+function sleep(ms: number) {
     return new Promise((res) => setTimeout(res, ms));
 }
 
-async function exec(cmd, delay = 0) {
+async function exec(cmd: string, delay = 0) {
     await sleep(delay);
     execSync(cmd);
 }
 
-async function runServices(services) {
+export async function runServices(services: Service[]) {
     const PATH_TO_SESSION_FILE = process.argv[2];
     
     // Create a new session
@@ -39,11 +40,3 @@ async function runServices(services) {
     await exec(`tmux killw -t ${SESSION_NAME}:0`);
     writeFileSync(PATH_TO_SESSION_FILE, `${SESSION_NAME}\n`);
 }
-
-//
-// Exports
-// 
-
-module.exports = {
-    runServices
-};
