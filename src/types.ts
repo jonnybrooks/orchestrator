@@ -20,8 +20,8 @@ const ServiceGroupConfigSchema = z.object({
 
 export const OrchestratorConfigSchema = z.object({
     baseServicePort: z.number(),
-    randomiseSessionName: z.boolean(),
-    staticSessionName: z.string(),
+    baseSessionName: z.string(),
+    singleSessionMode: z.boolean(),
     overwritePaneLabel: z.boolean(),
     services: z.array(ServiceConfigSchema),
     groups: z.record(ServiceGroupConfigSchema).optional()

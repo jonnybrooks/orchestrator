@@ -10,18 +10,20 @@ function sleep(ms: number) {
 
 async function exec(cmd: string, delay = 0) {
     await sleep(delay);
-    execSync(cmd);
+    return execSync(cmd);
 }
 
 export async function runServices(services: Service[]) {
     const PATH_TO_SESSION_FILE = process.argv[2];
     
     // Create a new session
-    const SESSION_NAME = config.randomiseSessionName ?
-        randomBytes(8).toString('hex') :
-        config.staticSessionName;
+    const SESSION_NAME = `${config.baseSessionName}_${randomBytes(4).toString('hex')}`;
+    if(config.singleSessionMode) {
+        // If we're not in multisession mode, destroy all other orchestrator sessions first
+        const cmd = `tmux ls | fgrep ${config.baseSessionName} | cut -d' ' -f1 | cut -d':' -f1 | xargs -I{} tmux kill-ses -t {}`;
+        try { await exec(cmd); } catch(e) {}
+    }
 
-    try { await exec(`tmux kill-session -t ${SESSION_NAME}`); } catch(e) {} // If a session already exists by that name, kill it
     await exec(`tmux new -d -s ${SESSION_NAME}`);
     
     // Spawn the services
@@ -34,7 +36,7 @@ export async function runServices(services: Service[]) {
         process.stderr.write(`Launching ${service.label}${delay_message}...\n`);
         await exec(cmd, service.delay);
     }
-    
+
     // Finalise
     process.stderr.write('Done launching services. Attaching to tmux...\n');
     await exec(`tmux killw -t ${SESSION_NAME}:0`);

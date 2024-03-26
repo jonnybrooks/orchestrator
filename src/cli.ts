@@ -1,4 +1,4 @@
-import inquirer from 'inquirer';
+const inquirer = require('inquirer');
 import * as pathUtils from 'path';
 import { Service, PromptGroup, ServiceConfig } from "./types";
 import * as utils from './utils';

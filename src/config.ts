@@ -5,10 +5,10 @@ import { OrchestratorConfig, OrchestratorConfigSchema } from './types';
 import { ZodError } from 'zod';
 
 const data = fs.readFileSync(path.resolve(__dirname, '../config.toml'), 'utf8');
-let config: OrchestratorConfig = toml.parse(data);
+const config: OrchestratorConfig = toml.parse(data);
 
 try {
-    config = OrchestratorConfigSchema.parse(config);
+    OrchestratorConfigSchema.parse(config);
 }
 catch(e) {
     if(e instanceof ZodError) {

@@ -3,10 +3,10 @@
 # Every field here is required. 
 #
 
-baseServicePort      = 8000           # The port to start "counting" from for auto-assigned ports.
-randomiseSessionName = false          # If true, the tmux session name will be randomly generated. If false, The session name will be `staticSessionName`.
-staticSessionName    = "orchestrator" # If `randomiseSessionName` is false, this is the name given to the session.
-overwritePaneLabel   = true           # If true, use ANSI escape codes to overwrite each tmux window's label with the service's label. Only makes sense if `set -g pane-border-status top` is present in `~/.tmux.conf`.
+baseServicePort    = 8000           # The port to start "counting" from for auto-assigned ports.
+baseSessionName    = "orchestrator" # The prefix for all session names.
+singleSessionMode  = true           # If true, every running tmux session prefixed with `baseSessionName` will first be closed before launching new ones.
+overwritePaneLabel = true           # If true, use ANSI escape codes to overwrite each tmux window's label with the service's label. Only makes sense if `set -g pane-border-status top` is present in `~/.tmux.conf`.
 
 #
 # Services
