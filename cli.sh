@@ -2,7 +2,7 @@
 
 set -e
 
-ROOT=$(dirname $(realpath "$0"))
+ROOT=$(dirname $(python -c "import os; print(os.path.realpath('$0'))"))
 
 function create_config_if_not_exist {
     if ! [ -f $1 ]; then
