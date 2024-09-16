@@ -2,7 +2,7 @@ import { Context, ServiceGroupConfig, Service } from "./types";
 import * as utils from './utils';
 
 /**
-* Hydrates (enriches) a service definition with additional metadata using example settings.
+* Hydrates a service definition with metadata using example settings.
 *
 * Here you may define custom logic for defining the service definitions fields. This is useful when you want to
 * define a service's fields based on other service metadata only known at runtime.

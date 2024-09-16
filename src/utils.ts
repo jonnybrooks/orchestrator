@@ -2,6 +2,10 @@ import { Context, Service, ServiceConfig, ServiceGroupConfig } from "./types";
 import * as pathUtils from 'path';
 import config from './config';
 
+export function sleep(ms: number) {
+    return new Promise((res) => setTimeout(res, ms));
+}
+
 //
 // Unwrap utils
 // 

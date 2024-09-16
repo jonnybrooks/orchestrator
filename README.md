@@ -1,4 +1,4 @@
-# orch-estrator 🍊
+# orchestrator
 
 `orchestrator` is a simple tool for launching your frontend/backend services locally, in parallel, in order to closely approximate and troubleshoot your e2e infrastructure without reaching for something heavier-weight, like containers.
 

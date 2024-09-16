@@ -15,7 +15,6 @@ const ServiceSchema = ServiceConfigSchema.required();
 
 const ServiceGroupConfigSchema = z.object({
     defaultCommands: z.array(z.string()).optional(),
-    hideInCli: z.boolean().optional()
 });
 
 export const OrchestratorConfigSchema = z.object({

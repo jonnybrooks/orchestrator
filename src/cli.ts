@@ -38,7 +38,11 @@ import config from './config';
             })
         }
         
-        if(config.groups?.[group]?.hideInCli) {
+        const hideInCli = config.services
+            .filter((service) => service.group === group)
+            .every((service) => !!service.alwaysRun);
+        
+        if(hideInCli) {
             delete promptGroups[group];
         }
     });

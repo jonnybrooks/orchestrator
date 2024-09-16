@@ -1,12 +1,9 @@
-import { Service } from "./types";
 import { execSync } from 'child_process';
 import { randomBytes } from 'crypto';
 import { writeFileSync } from 'fs';
+import { Service } from "./types";
+import { sleep } from "./utils";
 import config from './config';
-
-function sleep(ms: number) {
-    return new Promise((res) => setTimeout(res, ms));
-}
 
 async function exec(cmd: string, delay = 0) {
     await sleep(delay);
