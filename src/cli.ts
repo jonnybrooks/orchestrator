@@ -1,9 +1,8 @@
 const inquirer = require('inquirer');
-import * as pathUtils from 'path';
+import * as path from 'path';
 import { Service, PromptGroup, ServiceConfig } from "./types";
 import * as utils from './utils';
 import * as tmux from './tmux';
-import hydrateService from './hydrateService';
 import config from './config';
 
 ;(async function () {
@@ -30,7 +29,7 @@ import config from './config';
             choices[group].push(service);
         }
         else {
-            const label = pathUtils.basename(service.path);
+            const label = path.basename(service.path);
             promptGroup.choices.push({
                 name: label,
                 checked: !!service.selectedByDefault,
@@ -64,10 +63,11 @@ import config from './config';
         const def = utils.defineBaseService(context, group, service);
         serviceDefs.push(def);
     });
-    
+
+    const plugin = await import(path.resolve(__dirname, 'plugin'));
     serviceDefs.forEach((service) => {
         const group = config.groups?.[service.group] || {};
-        hydrateService(context, group, service, serviceDefs);
+        plugin.hydrateService(context, group, service, serviceDefs);
     });
 
     //
