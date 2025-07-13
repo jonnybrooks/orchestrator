@@ -16,7 +16,8 @@ This tool provides a CLI which prompts you to select which services you'd like t
 
 ## Configuring
 - This script will create config files from defaults in `./data` if they don't already exist.
-- Update `./config.toml` to configure the CLI and how services are launched. Take a look at the file's comments for directions on how to configure your services.
+- Update `./config.toml` to configure the CLI and how services are launched
+    - Take a look at the file's comments for directions on how to configure your services.
 - Update the generated `src/plugin.ts` to customise the logic for defining each service's config at runtime.
     - For now all this plugin does is expose a single function called `hydrateService` which allows you to define custom logic for how each service should be spawned. This code is commented to make it clear how you might customise it yourself.
     - For example, it switches on each service's group and populates each `env` field with the variables it needs to communicate with its downstream services.

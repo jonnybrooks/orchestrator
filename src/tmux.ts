@@ -10,6 +10,10 @@ async function exec(cmd: string, delay = 0) {
     return execSync(cmd);
 }
 
+function escapeQuotes(str: any) {
+    return String(str).replace(/"/gi, '\\"');
+}
+
 export async function runServices(services: Service[]) {
     const PATH_TO_SESSION_FILE = process.argv[2];
     
@@ -25,7 +29,7 @@ export async function runServices(services: Service[]) {
     
     // Spawn the services
     for(const service of services) {
-        const env = Object.entries(service.env ?? {}).map(([k, v]) => `-e ${k}=${v}`).join(' ');
+        const env = Object.entries(service.env ?? {}).map(([k, v]) => `-e ${k}="${escapeQuotes(v)}"`).join(' ');
         const commands = service.commands.join(' && ');
         const cmd = `tmux neww -d -t ${SESSION_NAME}: -n ${service.label} -c ${service.path} ${env} "${commands} || zsh"`;
 

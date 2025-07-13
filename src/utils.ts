@@ -10,10 +10,14 @@ export function sleep(ms: number) {
 // Unwrap utils
 // 
 
+function toUpperSnakeCase(label: string) {
+    return label.toUpperCase().replace(/-/gi, '_');
+}
+
 export function unwrapBackendEnvUrls(backends: Service[]) {
     const ret: Service['env'] = {};
     backends.forEach((service) => {
-        const serverName = service.label.toUpperCase().replace('-', '_');
+        const serverName = toUpperSnakeCase(service.label);
         const key = `${serverName}_URL`;
         ret[key] = `http://127.0.0.1:${service.env.PORT}/`
     });
@@ -23,7 +27,7 @@ export function unwrapBackendEnvUrls(backends: Service[]) {
 export function unwrapGraphqlEnvUrls(graphqls: Service[]) {
     const ret: Service['env'] = {};
     graphqls.forEach((service) => {
-        const serverName = service.label.toUpperCase().replace('-', '_');
+        const serverName = toUpperSnakeCase(service.label);
         const key = `${serverName}_URL`;
         ret[key] = `http://localhost:${service.env.PORT}/graphql`
     });

@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "build": "./scripts/build.sh",
-        "postinstall": "npm link --ignore-scripts",
+        "postinstall": "npm run build && npm link --ignore-scripts",
         "start": "npm run build && ./scripts/cli.sh"
     },
     "bin": {

@@ -65,9 +65,17 @@ import config from './config';
     });
 
     const plugin = await import(path.resolve(__dirname, 'plugin'));
+    
+    // first pass
     serviceDefs.forEach((service) => {
         const group = config.groups?.[service.group] || {};
-        plugin.hydrateService(context, group, service, serviceDefs);
+        plugin.hydrateService(context, group, service, serviceDefs, /* pass */ 1);
+    });
+
+    // second pass
+    serviceDefs.forEach((service) => {
+        const group = config.groups?.[service.group] || {};
+        plugin.hydrateService(context, group, service, serviceDefs, /* pass */ 2);
     });
 
     //
