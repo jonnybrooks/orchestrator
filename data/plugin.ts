@@ -1,49 +1,43 @@
-import config from "./config";
-import { Context, ServiceGroupConfig, Service } from "./types";
-import { unwrapBackendEnvUrls, unwrapGraphqlEnvUrls } from "./utils";
+/// <reference path="./exports.d.ts" />
 
-/**
-* Hydrates a service definition with metadata using example settings.
-* This function is called once for every service, in the order they're defined in config.toml.
-* @param {Context} context is an empty object passed from outside which allows you to attach custom data to each invocation of this function.
-* Keeping track of an incrementing port number, for example, is a good use case for this object.
-* @param {ServiceGroupConfig} group is this service's group config, if it exists.
-* @param {Service} service is the service's base definition, created by `defineBaseService`.
-* @param {Service[]} serviceDefs is a list of all service base definitions, which get hydrated as we go.
-* @return {void} void.
-*/
-export function hydrateService(
-    context: Context,
-    group: ServiceGroupConfig,
-    service: Service,
-    serviceDefs: Service[],
-    pass: number
-) {
+
+export const hydrateService: PluginInterface['hydrateService'] = (
+    ctx,
+    userData
+) => {
+    const {
+        config,
+        service,
+        serviceDefs,
+        pass,
+        utils,
+    } = ctx;
+
     if(pass == 1)
     {
-        if(!context.nextPort) context.nextPort = config.baseServicePort;
+        if(!userData.nextPort) userData.nextPort = config.baseServicePort;
         
         switch(service.group) {
             case 'backend': {
                 // Before assigning a port automatically, we first check if the base definition doesn't already have one.
                 // If it does, it was defined in `config.toml`, so we don't want to override it.
-                if(!service.env.PORT) service.env.PORT = context.nextPort++;
+                if(!service.env.PORT) service.env.PORT = userData.nextPort++;
             } break;
             case 'graphql': {
-                if(!service.env.PORT) service.env.PORT = context.nextPort++;            
+                if(!service.env.PORT) service.env.PORT = userData.nextPort++;            
                 // Create a list of backend URLs from all the backend services hydrated thus far, so we can wire
                 // them into this service's environment.
                 const backendServices = serviceDefs.filter(({ group }) => group === 'backend');
-                const unwrappedBackends = unwrapBackendEnvUrls(backendServices);
+                const unwrappedBackends = utils.unwrapBackendEnvUrls(backendServices);
                 Object.assign(service.env, unwrappedBackends);
             } break;
             case 'gateway': {
-                const unwrappedGraphqls = unwrapGraphqlEnvUrls(serviceDefs.filter(({ group }) => group === 'graphql'));
+                const unwrappedGraphqls = utils.unwrapGraphqlEnvUrls(serviceDefs.filter(({ group }) => group === 'graphql'));
                 Object.assign(service.env, unwrappedGraphqls);
             } break;
             case 'frontend': {
-                if(!service.env.CLI_SERVER_PORT) service.env.CLI_SERVER_PORT = context.nextPort++;
-                const unwrappedGraphqls = unwrapGraphqlEnvUrls(serviceDefs.filter(({ group }) => group === 'graphql'));
+                if(!service.env.CLI_SERVER_PORT) service.env.CLI_SERVER_PORT = userData.nextPort++;
+                const unwrappedGraphqls = utils.unwrapGraphqlEnvUrls(serviceDefs.filter(({ group }) => group === 'graphql'));
                 Object.assign(service.env, unwrappedGraphqls);
                 // Each frontend needs to connect to the federated graphql supergraph, aka the 'gateway'.
                 // We have configured `config.toml` to contain a single service under the 'gateway' group, so we can

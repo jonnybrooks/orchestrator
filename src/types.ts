@@ -5,8 +5,7 @@ const ServiceConfigSchema = z.object({
     group: z.string(),
     label: z.string().optional(),
     delay: z.number().optional(),
-    env: z.record(z.any()).optional(),
-    selectedByDefault: z.boolean().optional(),
+    env: z.record(z.any()).default({}),
     commands: z.array(z.string()).optional(),
     alwaysRun: z.boolean().optional(),
 });
@@ -28,20 +27,14 @@ export const OrchestratorConfigSchema = z.object({
 
 export type ServiceConfig = z.infer<typeof ServiceConfigSchema>;
 export type Service = z.infer<typeof ServiceSchema>;
-export type ServiceGroupConfig = z.infer<typeof ServiceGroupConfigSchema>;
+export type GroupConfig = z.infer<typeof ServiceGroupConfigSchema>;
 export type OrchestratorConfig = z.infer<typeof OrchestratorConfigSchema>;
 
-export type PromptChoice = {
-    name: string,
-    checked: boolean,
-    value: ServiceConfig,
+export type UserData = Record<string, any>;
+export type Context = {
+    config: OrchestratorConfig,
+    group: GroupConfig,
+    service: ServiceConfig,
+    serviceDefs: Service[],
+    pass: number,
 };
-
-export type PromptGroup = {
-    name: string,
-    message: string,
-    type: string,
-    choices: PromptChoice[],
-};
-
-export type Context = Record<string, any>;

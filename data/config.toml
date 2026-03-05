@@ -18,7 +18,6 @@ group             = "backend"            # (required) Group to which this servic
 path              = "~/path/to/service"  # (required) Path to the service's root directory.
 delay             = 0                    # Delay, in ms, to wait before launching the service. Default: 0.
 env               = {}                   # Environment variables in the service. Default: empty.
-selectedByDefault = false                # Whether or not the service is selected by default in the CLI. Default: false.
 commands          = ["npm launch"]       # Commands tmux will run to launch the service. Default: defaultCommands for this service's group.
 alwaysRun         = false                # If true, hides this service in the CLI and always runs it. Note: if every service in a group is `alwaysRun`, the entire group will be hidden in the CLI. Default: false.
 

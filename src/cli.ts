@@ -1,11 +1,55 @@
 const inquirer = require('inquirer');
-import * as path from 'path';
-import { Service, PromptGroup, ServiceConfig } from "./types";
-import * as utils from './utils';
+import * as pathUtils from 'path';
+import * as fs from 'fs';
+import { register } from "ts-node";
+import { Service, ServiceConfig, UserData } from "./types";
+import { PluginContext } from './plugin-types';
 import * as tmux from './tmux';
-import config from './config';
+import config, { CONFIG_ROOT } from './config';
+import * as utils from './utils';
+
+
+const DATA_ROOT = pathUtils.join(
+    process.env.XDG_DATA_HOME ?? `${process.env.HOME}/.local/share`,
+    'orchestrator'
+);
+
+const LAST_CHOICES_PATH = pathUtils.join(DATA_ROOT, 'lastChoices.json');
+
+export type PromptChoice = {
+    name: string,
+    checked: boolean,
+    value: ServiceConfig,
+};
+
+export type PromptGroup = {
+    name: string,
+    message: string,
+    type: string,
+    choices: PromptChoice[],
+};
+
+
+function renamePane(label: string) {
+    return `printf '\x1b]2;${label}\x07'`;
+}
 
 ;(async function () {
+    //
+    // Load the plugin.ts, lastChoices.json
+    //   
+    
+    register({ transpileOnly: true });
+    const pluginPath = pathUtils.join(CONFIG_ROOT, "plugin.ts");
+    const plugin: PluginInterface = await import(pluginPath);
+    if(!plugin) {
+        console.error(`Unable to load plugin at path: ${pluginPath}`);
+        return;
+    }
+
+    const lastChoicesData = fs.readFileSync(LAST_CHOICES_PATH, 'utf8');
+    const lastChoices: string[] = JSON.parse(lastChoicesData);
+
     //
     // Prompt user for choices
     //
@@ -15,7 +59,9 @@ import config from './config';
     
     config.services.forEach((service) => {
         const group = service.group;
+        
         if(!choices[group]) choices[group] = [];
+        
         if(!promptGroups[group]) promptGroups[group] = {
             name: group,
             message: `Which services in group '${group}' would you like to run?`,
@@ -29,10 +75,11 @@ import config from './config';
             choices[group].push(service);
         }
         else {
-            const label = path.basename(service.path);
+            const label = pathUtils.basename(service.path);
+            const checked = lastChoices.includes(label);
             promptGroup.choices.push({
+                checked,
                 name: label,
-                checked: !!service.selectedByDefault,
                 value: service,
             })
         }
@@ -55,28 +102,49 @@ import config from './config';
     // Compose service definitions
     //
     
-    const serviceDefs: Service[] = [];
-    const context = {};
-
-    Object.values(choices).flat().forEach((service) => {
-        const group = config.groups?.[service.group] || {};
-        const def = utils.defineBaseService(context, group, service);
-        serviceDefs.push(def);
-    });
-
-    const plugin = await import(path.resolve(__dirname, 'plugin'));
+    const chosenServices = Object.values(choices).flat();
+    const chosenServiceNames = chosenServices
+        .filter((service) => !service.alwaysRun)
+        .map(({path}) => pathUtils.basename(path));
+    fs.writeFileSync(LAST_CHOICES_PATH, JSON.stringify(chosenServiceNames));
     
-    // first pass
-    serviceDefs.forEach((service) => {
+    // populate serviceDefs with base service defintions from config.toml
+    const serviceDefs: Service[] = [];
+    const userData: UserData = {};
+    chosenServices.forEach((service) => {
         const group = config.groups?.[service.group] || {};
-        plugin.hydrateService(context, group, service, serviceDefs, /* pass */ 1);
+        const label = pathUtils.basename(service.path);
+        serviceDefs.push({
+            ...service,
+            label: service.label || label,
+            delay: service.delay || 0,
+            env: service.env || {},
+            alwaysRun: service.alwaysRun || false,
+            commands: [
+                ...(config.overwritePaneLabel ? [renamePane(label)] : []),
+                ...(service.commands || group.defaultCommands || [])
+            ],
+        });
     });
 
-    // second pass
-    serviceDefs.forEach((service) => {
-        const group = config.groups?.[service.group] || {};
-        plugin.hydrateService(context, group, service, serviceDefs, /* pass */ 2);
-    });
+    
+    // Run 2-pass hydration
+    const baseCtx: Pick<PluginContext, 'config' | 'serviceDefs' | 'utils' | 'pass'> = {
+        config,
+        serviceDefs,
+        utils,
+        pass: 0,
+    };
+
+    for(let i = 0; i < 2; ++i)
+    {
+        serviceDefs.forEach((service) => {
+            baseCtx.pass++;
+            const group = config.groups?.[service.group] || {};
+            const ctx: PluginContext = { ...baseCtx, group, service };
+            plugin.hydrateService(ctx, userData);
+        });
+    }
 
     //
     // Run services

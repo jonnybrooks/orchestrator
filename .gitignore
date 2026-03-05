@@ -7,3 +7,4 @@ plugin.ts
 !data/*
 locale/
 .cache/
+data/*.d.ts
