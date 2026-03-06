@@ -136,12 +136,11 @@ function renamePane(label: string) {
         pass: 0,
     };
 
-    for(let i = 0; i < 2; ++i)
+    for(let pass = 1; pass <= 2; pass++)
     {
         serviceDefs.forEach((service) => {
-            baseCtx.pass++;
             const group = config.groups?.[service.group] || {};
-            const ctx: PluginContext = { ...baseCtx, group, service };
+            const ctx: PluginContext = { ...baseCtx, group, service, pass };
             plugin.hydrateService(ctx, userData);
         });
     }
