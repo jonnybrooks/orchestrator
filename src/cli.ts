@@ -39,7 +39,7 @@ function renamePane(label: string) {
     // Load the plugin.ts, lastChoices.json
     //   
     
-    register({ transpileOnly: true });
+    register({ transpileOnly: true, moduleTypes: { '*': 'cjs' } });
     const pluginPath = pathUtils.join(CONFIG_ROOT, "plugin.ts");
     const plugin: PluginInterface = await import(pluginPath);
     if(!plugin) {
