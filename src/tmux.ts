@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
 import { randomBytes } from 'crypto';
 import { writeFileSync } from 'fs';
+import { join } from 'path';
 import { Service } from "./types";
 import { sleep } from "./utils";
 import config from './config';
@@ -11,7 +12,30 @@ async function exec(cmd: string, delay = 0) {
 }
 
 function escapeQuotes(str: any) {
-    return String(str).replace(/"/gi, '\\"');
+    let s = String(str);
+    s = s.replace(/"/gi, `\\"`);
+    return s;
+}
+
+function execService(service: Service, sessionName: string) {
+    const envLines = Object.entries(service.env ?? {}).map(([k, v]) => `${k}="${escapeQuotes(v)}"`);
+    const shellEnv = envLines.map((line) => `export ${line}`).join('\n');
+    const tmuxEnv = envLines.map((line) => `-e ${line}`).join(' ');
+
+    const commands = escapeQuotes(service.commands.join(' && '));
+    const scriptContent = [
+        `#!${process.env.SHELL}`,
+        shellEnv,
+        `trap 'echo "Process killed. Dropping into shell..." ; break' INT`,
+        commands,
+        `trap - INT`,
+        `exec $SHELL -i`,
+    ].join('\n');
+
+    const tempFilePath = join('/tmp', `${sessionName}_${service.label}.sh`);
+    writeFileSync(tempFilePath, scriptContent, { mode: 0o755 });
+    const cmd = `tmux neww -d -t ${sessionName}: -n ${service.label} -c ${service.path} ${tmuxEnv} ${tempFilePath}`;
+    return exec(cmd, service.delay);
 }
 
 export async function runServices(services: Service[]) {
@@ -28,15 +52,11 @@ export async function runServices(services: Service[]) {
     await exec(`tmux new -d -s ${SESSION_NAME}`);
     
     // Spawn the services
-    for(const service of services) {
-        const env = Object.entries(service.env ?? {}).map(([k, v]) => `-e ${k}="${escapeQuotes(v)}"`).join(' ');
-        const commands = service.commands.join(' && ');
-        const cmd = `tmux neww -d -t ${SESSION_NAME}: -n ${service.label} -c ${service.path} ${env} "${commands} || zsh"`;
-
-        const delay_message = (service.delay && service.delay > 0) ? ` (with ${service.delay / 1000}s delay)` : '';
-        process.stderr.write(`Launching ${service.label}${delay_message}...\n`);
-        await exec(cmd, service.delay);
-    }
+    await Promise.all(services.map((service) => {
+        const delayMsg = (service.delay && service.delay > 0) ? ` (with ${service.delay / 1000}s delay)` : '';
+        process.stderr.write(`Launching ${service.label}${delayMsg}...\n`);
+        return execService(service, SESSION_NAME);
+    }));
 
     // Finalise
     process.stderr.write('Done launching services. Attaching to tmux...\n');
