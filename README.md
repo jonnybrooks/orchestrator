@@ -1,6 +1,6 @@
-# (orch)estrator
+# orch-estrator
 
-`orchestrator` is a simple tool for launching your services locally, in parallel, in order to approximate your e2e infrastructure locally for testing updates without needing to deploy.
+`orchestrator` is a simple tool for launching your services locally, in parallel, in order to approximate your e2e infrastructure locally for testing updates without needing to deploy, or use something heavyweight like docker compose.
 
 To do this it utilises `tmux`, a terminal multiplexing utility, to spawn each service as a virtual window within a single session, as well as automatically doing all of the environment variable plumbing necessary for the services to communicate with eachother.
 
@@ -15,8 +15,8 @@ This tool provides a CLI which prompts you to select which services you'd like t
 - tmux: https://github.com/tmux/tmux/wiki/Installing
 
 ## Configuring
-- This script will create config files from defaults in `./data` if they don't already exist.
-- Update `./config.toml` to configure the CLI and how services are launched
+- This script will create config files using defaults in `./data` if they don't already exist. It will store your local config files in `~/.config/orchestrator`
+- Update `config.toml` to configure the CLI and how services are launched
     - Take a look at the file's comments for directions on how to configure your services.
 - Update the generated `src/plugin.ts` to customise the logic for defining each service's config at runtime.
     - For now all this plugin does is expose a single function called `hydrateService` which allows you to define custom logic for how each service should be spawned. This code is commented to make it clear how you might customise it yourself.
