@@ -5,6 +5,7 @@ import { join } from 'path';
 import { Service } from "./types";
 import { sleep } from "./utils";
 import config from './config';
+import args from './args';
 
 async function exec(cmd: string, delay = 0) {
     await sleep(delay);
@@ -39,7 +40,7 @@ function execService(service: Service, sessionName: string) {
 }
 
 export async function runServices(services: Service[]) {
-    const PATH_TO_SESSION_FILE = process.argv[2];
+    const PATH_TO_SESSION_FILE = args.sessionFilePath;
     
     // Create a new session
     const SESSION_NAME = `${config.baseSessionName}_${randomBytes(4).toString('hex')}`;

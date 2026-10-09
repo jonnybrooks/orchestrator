@@ -27,6 +27,8 @@ This tool provides a CLI which prompts you to select which services you'd like t
 - This command will list the services as defined in `config.toml#services` and will prompt you to select which services you'd like to run in tandem.
 - Use the arrow keys to navigate choices, space to toggle a selection, and enter to proceed.
 - `orchestrate` will spawn each service selected within the same tmux session in its own window.
+- Pass `-p` / `--run-previous` to skip the prompts entirely and relaunch the same services you picked last time, e.g. `orchestrate -p`. Services marked `alwaysRun` are included as usual.
+- Pass `-h` / `--help` to list the available options.
 - Finally this tool will automatically attach itself to the tmux session
     - You can navigate to prev/next windows with `<PREFIX>,p` / `<PREFIX>,n` respectively
     - The default tmux `<PREFIX>` is `ctrl+b`

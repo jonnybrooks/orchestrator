@@ -6,6 +6,7 @@ import { Service, ServiceConfig, UserData } from "./types";
 import { PluginContext } from './plugin-types';
 import * as tmux from './tmux';
 import config, { CONFIG_ROOT } from './config';
+import args from './args';
 import * as utils from './utils';
 
 
@@ -34,6 +35,44 @@ function renamePane(label: string) {
     return `printf '\x1b]2;${label}\x07'`;
 }
 
+// Reads lastChoices.json, falling back to an empty selection if it's missing or unreadable.
+// It's only a convenience cache, so a bad file should never stop the CLI from running.
+function loadLastChoices(): string[] {
+    let data: string;
+    try {
+        data = fs.readFileSync(LAST_CHOICES_PATH, 'utf8');
+    }
+    catch(e) {
+        if((e as NodeJS.ErrnoException).code !== 'ENOENT') {
+            console.error(`Warning: couldn't read ${LAST_CHOICES_PATH}. Starting with an empty selection.`);
+        }
+        return [];
+    }
+
+    try {
+        const lastChoices = JSON.parse(data);
+        if(!Array.isArray(lastChoices) || lastChoices.some((choice) => typeof choice !== 'string')) {
+            throw new Error('expected an array of service names');
+        }
+        return lastChoices;
+    }
+    catch(e) {
+        console.error(`Warning: ${LAST_CHOICES_PATH} was invalid. Starting with an empty selection.`);
+        return [];
+    }
+}
+
+// Re-select whatever was chosen last time, i.e. every choice already ticked by lastChoices.json.
+function selectPreviousChoices(promptGroups: Record<string, PromptGroup>) {
+    const ret: Record<string, ServiceConfig[]> = {};
+    Object.entries(promptGroups).forEach(([group, promptGroup]) => {
+        ret[group] = promptGroup.choices
+            .filter(({checked}) => checked)
+            .map(({value}) => value);
+    });
+    return ret;
+}
+
 ;(async function () {
     //
     // Load the plugin.ts, lastChoices.json
@@ -47,8 +86,7 @@ function renamePane(label: string) {
         return;
     }
 
-    const lastChoicesData = fs.readFileSync(LAST_CHOICES_PATH, 'utf8');
-    const lastChoices: string[] = JSON.parse(lastChoicesData);
+    const lastChoices = loadLastChoices();
 
     //
     // Prompt user for choices
@@ -93,7 +131,9 @@ function renamePane(label: string) {
         }
     });
 
-    const promptChoices: Record<string, Service[]> = await inquirer.prompt(Object.values(promptGroups).flat());
+    const promptChoices: Record<string, ServiceConfig[]> = args.runPrevious
+        ? selectPreviousChoices(promptGroups)
+        : await inquirer.prompt(Object.values(promptGroups).flat());
     for(const [group, services] of Object.entries(promptChoices)) {
         choices[group].push(...services);
     }
@@ -103,10 +143,23 @@ function renamePane(label: string) {
     //
     
     const chosenServices = Object.values(choices).flat();
+    if(!chosenServices.length) {
+        console.error(args.runPrevious
+            ? 'No previous services to run. Run `orchestrate` without --run-previous to choose some.'
+            : 'No services selected. Nothing to run.');
+        process.exit(1);
+    }
+
     const chosenServiceNames = chosenServices
         .filter((service) => !service.alwaysRun)
         .map(({path}) => pathUtils.basename(path));
-    fs.writeFileSync(LAST_CHOICES_PATH, JSON.stringify(chosenServiceNames));
+    try {
+        fs.mkdirSync(DATA_ROOT, { recursive: true });
+        fs.writeFileSync(LAST_CHOICES_PATH, JSON.stringify(chosenServiceNames));
+    }
+    catch(e) {
+        console.error(`Warning: couldn't save your selection to ${LAST_CHOICES_PATH}.`);
+    }
     
     // populate serviceDefs with base service defintions from config.toml
     const serviceDefs: Service[] = [];
